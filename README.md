@@ -16,3 +16,13 @@
 - [x] Résolution de nom dans `/etc/hosts`
 - [x] Synchronisation temporelle (`chrony`)
 - [x] Tests de connectivité IP (pings OK)
+
+
+## Phase 1 : Configuration du routage LAN <-> DMZ
+
+Afin de permettre la communication et l'accès SSH/HTTP direct depuis la zone **HA-LAN** (`192.168.10.0/24`) vers les serveurs de la zone **HA-DMZ** (`192.168.20.0/24`) sans passer par un rebond SSH manuel sur `LB1`, la topologie de routage suivante a été mise en place :
+
+### 1. Routage sur le poste CLIENT (`192.168.10.50`)
+Ajout d'une route statique pointant vers `LB1` comme passerelle vers la DMZ :
+```bash
+sudo ip route add 192.168.20.0/24 via 192.168.10.11
