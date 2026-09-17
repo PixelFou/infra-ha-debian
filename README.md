@@ -24,5 +24,20 @@ Afin de permettre la communication et l'accès SSH/HTTP direct depuis la zone **
 
 ### 1. Routage sur le poste CLIENT (`192.168.10.50`)
 Ajout d'une route statique pointant vers `LB1` comme passerelle vers la DMZ :
-```bash
-sudo ip route add 192.168.20.0/24 via 192.168.10.11
+`sudo ip route add 192.168.20.0/24 via 192.168.10.11`
+
+### 2. Routage et IP Forwarding sur LB1 (`192.168.10.11` / `192.168.20.11`)
+Activation du transfert de paquets IPv4 pour autoriser le passage du trafic entre les interfaces `HA-LAN` et `HA-DMZ` :
+`sudo sysctl -w net.ipv4.ip_forward=1`
+*(Configuration pérennisée dans `/etc/sysctl.conf` via `net.ipv4.ip_forward=1`)*
+
+### 3. Routage sur les serveurs applicatifs WEB1 (`192.168.20.21`) et WEB2 (`192.168.20.22`)
+Par défaut, la route `default` des serveurs web pointe vers l'interface NAT VirtualBox (`10.0.2.2`) pour l'accès aux mises à jour `apt`. Pour permettre aux paquets de retour à destination du CLIENT d'emprunter la bonne interface, une route statique vers le LAN via `LB1` a été ajoutée sur `WEB1` et `WEB2` :
+`sudo ip route add 192.168.10.0/24 via 192.168.20.11`
+
+---
+### Validation des flux
+- **Ping inter-réseaux :** `ping 192.168.20.21` valide depuis `CLIENT`.
+- **Accès SSH :** `ssh debian@192.168.20.21` et `ssh debian@192.168.20.22` opérationnels directement depuis `CLIENT`.
+
+
