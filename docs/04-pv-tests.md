@@ -52,7 +52,7 @@ Vérifier que le rétablissement du load-balancer principal (`LB1`) après une d
 
 ### Configuration appliquée
 Dans `/etc/keepalived/keepalived.conf` sur **LB1** et **LB2** :
-- Passing du paramètre `state` à **`BACKUP`** sur l'ensemble des nœuds (prérequis technique obligatoire pour la non-préemption).
+- Passing du paramètre `state` à **`BACKUP`** sur lb1 dans chaque instance VRRP. (prérequis technique obligatoire pour la non-préemption).
 - Ajout de la directive **`nopreempt`** dans chaque instance VRRP (`VI_LAN` et `VI_DMZ`).
 - Maintien des priorités relatives : `LB1` (priorité `101`), `LB2` (priorité `100`).
 
