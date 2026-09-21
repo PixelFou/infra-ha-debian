@@ -97,3 +97,26 @@ debian@client: curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E
 ### Test exécuté depuis le CLIENT
 ```bash
 curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+```
+
+---
+
+
+## Test 4.2 — Résolution par persistance de session (Sticky Sessions HAProxy)
+
+### Objectif
+Mettre en place et valider le mécanisme de persistance de session basé sur l'injection d'un cookie applicatif (`SERVERID`) par HAProxy, afin de garantir qu'un client reste orienté vers le même serveur backend tout au long de sa navigation.
+
+### Configuration appliquée
+Dans `/etc/haproxy/haproxy.cfg` (sur **LB1** et **LB2**), au sein du bloc `backend web_servers` :
+- Ajout de la directive `cookie SERVERID insert indirect nocache`.
+- Configuration de l'option `cookie <id>` sur chaque déclaration de serveur backend (`web1` et `web2`).
+
+```haproxy
+backend web_servers
+    balance roundrobin
+    cookie SERVERID insert indirect nocache
+    option httpchk GET /health
+    http-check expect status 200
+    server web1 192.168.20.21:80 check inter 2000ms fall 5 rise 2 cookie web1
+    server web2 192.168.20.22:80 check inter 2000ms fall 5 rise 2 cookie web2
