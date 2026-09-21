@@ -80,17 +80,17 @@ La stratégie de non-préemption est **validée**. Le cluster conserve sa stabil
 Observer le comportement d'une application PHP utilisant les sessions applicatives (compteur de visites) distribuée sur un cluster HAProxy en équilibrage de charge de type *Round-Robin* sans persistance de session.
 
 ### Résultat
-debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+debian@client: curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
         <li><strong>Compteur de visites (Session) :</strong> 1</li>
-debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+debian@client: curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
         <li><strong>Compteur de visites (Session) :</strong> 1</li>
-debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+debian@client: curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
         <li><strong>Compteur de visites (Session) :</strong> 2</li>
-debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+debian@client: curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
         <li><strong>Compteur de visites (Session) :</strong> 2</li>
-debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+debian@client: curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
         <li><strong>Compteur de visites (Session) :</strong> 3</li>
-debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+debian@client: curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
         <li><strong>Compteur de visites (Session) :</strong> 3</li>
 
 
