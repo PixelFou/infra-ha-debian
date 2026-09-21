@@ -70,3 +70,30 @@ Dans `/etc/keepalived/keepalived.conf` sur **LB1** et **LB2** :
 
 ### Conclusion
 La stratégie de non-préemption est **validée**. Le cluster conserve sa stabilité sur le nœud `LB2` sans imposer de coupure réseau supplémentaire lors de la reconnexion de `LB1`. Le basculement inverse vers `LB1` pourra être planifié ultérieurement de façon contrôlée lors d'une fenêtre de maintenance.
+
+
+---
+
+## Test 4.1 — Identification de l'incohérence d'état applicatif (Sessions PHP)
+
+### Objectif
+Observer le comportement d'une application PHP utilisant les sessions applicatives (compteur de visites) distribuée sur un cluster HAProxy en équilibrage de charge de type *Round-Robin* sans persistance de session.
+
+### Résultat
+debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+        <li><strong>Compteur de visites (Session) :</strong> 1</li>
+debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+        <li><strong>Compteur de visites (Session) :</strong> 1</li>
+debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+        <li><strong>Compteur de visites (Session) :</strong> 2</li>
+debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+        <li><strong>Compteur de visites (Session) :</strong> 2</li>
+debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+        <li><strong>Compteur de visites (Session) :</strong> 3</li>
+debian@client:~$ curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
+        <li><strong>Compteur de visites (Session) :</strong> 3</li>
+
+
+### Test exécuté depuis le CLIENT
+```bash
+curl -c /tmp/cj -b /tmp/cj -s http://192.168.10.100/ | grep -i -E 'compteur|served'
