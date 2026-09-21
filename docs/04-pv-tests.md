@@ -14,7 +14,7 @@ Prouver la bascule automatique du rôle MASTER entre LB1 et LB2 lors de l'arrêt
 10:55:41.898073 IP 192.168.10.12 > 224.0.0.18: VRRPv2, Advertisement, vrid 10, prio 100, authtype simple, intvl 1s, length 20
 10:55:42.898688 IP 192.168.10.12 > 224.0.0.18: VRRPv2, Advertisement, vrid 10, prio 100, authtype simple, intvl 1s, length 20
 
-
+---
 
 ## Test 3.7 — Mesures comparatives du RTO (Recovery Time Objective)
 
