@@ -24,21 +24,21 @@ Mesurer le temps d'interruption de service (RTO) perçu par le client final lors
 
 ### Tableau comparatif des résultats
 
-| Scénario | Type de panne | Commandes exécutées | Mécanisme de détection | RTO Mesuré | Conforme ANSSI |
+| Scénario | Type de panne | Commandes / Actions | Mécanisme de détection | RTO Mesuré | Conforme ANSSI |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Scénario A** | Arrêt gracieux VRRP | `systemctl stop keepalived` | Notification active VRRP (`prio 0`) | **~0,6 s** |  Oui (< 1s) |
-| **Scénario B** | Crash applicatif HAProxy | `killall -9 haproxy` | Échec du `track_script` Keepalived | **~2,5 s** |  Oui (< 5s) |
-| **Scénario C** | Perte de lien réseau LAN | `ip link set dev enp0s8 down` | Expiration du *Master Down Timer* | **~3,6 s** |  Oui (< 5s) |
+| **Scénario A** | Arrêt gracieux VRRP | `systemctl stop keepalived` | Notification active VRRP (`prio 0`) | **~0,6 s** | Oui (< 1 s) |
+| **Scénario B** | Crash applicatif HAProxy | `killall -9 haproxy` | Échec du `track_script` Keepalived | **~2,5 s** | Oui (< 5 s) |
+| **Scénario C** | Perte de lien / Pause de la VM | `ip link set dev enp0s8 down` ou Pause VM | `track_interface` + Gratuitous ARP via `VG_1` | **~0,1 s** | Oui (< 1 s) |
 
 ---
 
 ### Analyse et justification des écarts de RTO
 
-1. **Scénario A (Bascule la plus rapide) :**
-   Lors d'un arrêt propre de Keepalived, `LB1` émet immédiatement une trame VRRP d'adieu avec une priorité de `0`. `LB2` reçoit ce signal et prend instantanément le relais sans attendre de délai d'inactivité.
+1. **Scénario A (Arrêt gracieux de Keepalived) :**
+   Lors de l'arrêt du service, `LB1` émet une trame VRRP d'adieu avec une priorité de `0`. `LB2` intercepte immédiatement ce signal et prend le relais sans attente.
 
 2. **Scénario B (Détection par la sonde applicative) :**
-   Le délai de bascule dépend de la fréquence du script d'état `check_haproxy` (paramètres `interval` et `fall` dans `keepalived.conf`). La détection prend environ 2 secondes avant que Keepalived ne réduise la priorité ou ne bascule en état `FAULT`.
+   Le délai de bascule est conditionné par la fréquence de contrôle du script d'état `check_haproxy` (`interval` et `fall`). La détection et la dégradation de priorité nécessitent environ 2,5 secondes avant la bascule du rôle MASTER.
 
-3. **Scénario C (Bascule sur timeout VRRP) :**
-   En cas de perte brutale d'interface, `LB1` ne peut émettre aucune trame de notification. `LB2` constate l'absence d'annonces VRRP et déclenche la bascule à l'expiration.
+3. **Scénario C (Coupure de lien / Isolation) :**
+   Grâce au groupe de synchronisation `vrrp_sync_group VG_1` et au suivi d'interface `track_interface`, la perte du lien sur le réseau client déclenche une bascule instantanée. `LB2` émet aussitôt des trames *Gratuitous ARP* pour mettre à jour la table ARP des équipements clients, limitant la perte à une seule requête HTTP (~0,1 s).
