@@ -43,9 +43,9 @@ Mesurer le temps d'interruption de service (RTO) perçu par le client final lors
 3. **Scénario C (Coupure de lien / Isolation) :**
    Grâce au groupe de synchronisation `vrrp_sync_group VG_1` et au suivi d'interface `track_interface`, la perte du lien sur le réseau client déclenche une bascule instantanée. `LB2` émet aussitôt des trames *Gratuitous ARP* pour mettre à jour la table ARP des équipements clients, limitant la perte à une seule requête HTTP (~0,1 s).
 
+---
 
-
-   ## Test 3.8 — Validation de la stratégie de non-préemption (`nopreempt`)
+## Test 3.8 — Validation de la stratégie de non-préemption (`nopreempt`)
 
 ### Objectif
 Vérifier que le rétablissement du load-balancer principal (`LB1`) après une défaillance ne provoque pas de retour automatique (*failback*) vers `LB1` tant que le nœud secondaire (`LB2`) fonctionne normalement. Cette configuration élimine toute seconde interruption de service inutile et évite les risques de clignotement (*flapping*) du cluster.
