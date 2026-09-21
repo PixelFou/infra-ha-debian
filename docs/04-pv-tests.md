@@ -41,6 +41,4 @@ Mesurer le temps d'interruption de service (RTO) perçu par le client final lors
    Le délai de bascule dépend de la fréquence du script d'état `check_haproxy` (paramètres `interval` et `fall` dans `keepalived.conf`). La détection prend environ 2 secondes avant que Keepalived ne réduise la priorité ou ne bascule en état `FAULT`.
 
 3. **Scénario C (Bascule sur timeout VRRP) :**
-   En cas de perte brutale d'interface, `LB1` ne peut émettre aucune trame de notification. `LB2` constate l'absence d'annonces VRRP et déclenche la bascule à l'expiration du *Master Down Timer*, calculé selon la formule :
-   $$\text{Master\_Down\_Timer} = (3 \times \text{Advertisement\_Interval}) + \text{Skew\_Time}$$
-   Avec un intervalle d'annonce de $1\text{s}$, le délai théorique d'environ $3,6\text{s}$ correspond exactement à la mesure relevée par la sonde.
+   En cas de perte brutale d'interface, `LB1` ne peut émettre aucune trame de notification. `LB2` constate l'absence d'annonces VRRP et déclenche la bascule à l'expiration.
