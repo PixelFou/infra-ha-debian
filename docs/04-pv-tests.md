@@ -42,3 +42,31 @@ Mesurer le temps d'interruption de service (RTO) perçu par le client final lors
 
 3. **Scénario C (Coupure de lien / Isolation) :**
    Grâce au groupe de synchronisation `vrrp_sync_group VG_1` et au suivi d'interface `track_interface`, la perte du lien sur le réseau client déclenche une bascule instantanée. `LB2` émet aussitôt des trames *Gratuitous ARP* pour mettre à jour la table ARP des équipements clients, limitant la perte à une seule requête HTTP (~0,1 s).
+
+
+
+   ## Test 3.8 — Validation de la stratégie de non-préemption (`nopreempt`)
+
+### Objectif
+Vérifier que le rétablissement du load-balancer principal (`LB1`) après une défaillance ne provoque pas de retour automatique (*failback*) vers `LB1` tant que le nœud secondaire (`LB2`) fonctionne normalement. Cette configuration élimine toute seconde interruption de service inutile et évite les risques de clignotement (*flapping*) du cluster.
+
+### Configuration appliquée
+Dans `/etc/keepalived/keepalived.conf` sur **LB1** et **LB2** :
+- Passing du paramètre `state` à **`BACKUP`** sur l'ensemble des nœuds (prérequis technique obligatoire pour la non-préemption).
+- Ajout de la directive **`nopreempt`** dans chaque instance VRRP (`VI_LAN` et `VI_DMZ`).
+- Maintien des priorités relatives : `LB1` (priorité `101`), `LB2` (priorité `100`).
+
+---
+
+### Chronologie du test et observations
+
+| Étape | Action exécutée | État LB1 | État LB2 | Nœud porteur des VIP | Comportement observé |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **1. Boot initial** | Démarrage à froid du cluster | `MASTER` | `BACKUP` | **LB1** | `LB1` devient `MASTER` au démarrage initial grâce à sa priorité supérieure (101 vs 100). |
+| **2. Simulation Panne** | `systemctl stop keepalived` sur LB1 | `STOPPED` | `MASTER` | **LB2** | Bascule automatique instantanée des VIP vers `LB2`. |
+| **3. Rétablissement** | `systemctl start keepalived` sur LB1 | `BACKUP` | `MASTER` | **LB2** | **Conforme** : `LB1` réintègre le cluster en état `BACKUP`. Les VIP restent stables sur `LB2`. |
+
+---
+
+### Conclusion
+La stratégie de non-préemption est **validée**. Le cluster conserve sa stabilité sur le nœud `LB2` sans imposer de coupure réseau supplémentaire lors de la reconnexion de `LB1`. Le basculement inverse vers `LB1` pourra être planifié ultérieurement de façon contrôlée lors d'une fenêtre de maintenance.
