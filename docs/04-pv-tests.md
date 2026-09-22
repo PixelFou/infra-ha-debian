@@ -120,3 +120,17 @@ backend web_servers
     http-check expect status 200
     server web1 192.168.20.21:80 check inter 2000ms fall 5 rise 2 cookie web1
     server web2 192.168.20.22:80 check inter 2000ms fall 5 rise 2 cookie web2
+```
+
+### Résultats observés
+
+<li><strong>Compteur de visites (Session) :</strong> 1</li>
+<li><strong>Compteur de visites (Session) :</strong> 2</li>
+<li><strong>Compteur de visites (Session) :</strong> 3</li>
+<li><strong>Compteur de visites (Session) :</strong> 4</li>
+<li><strong>Compteur de visites (Session) :</strong> 5</li>
+<li><strong>Compteur de visites (Session) :</strong> 6</li>
+
+## Conclusion
+
+La persistance de session par cookie HTTP est validée. HAProxy injecte le cookie SERVERID=web1 lors de la première réponse. Pour toutes les requêtes ultérieures, la présence de ce cookie permet au load-balancer d'acheminer le trafic vers le même nœud, assurant la continuité du stockage local des sessions PHP et l'incrémentation linéaire du compteur.
