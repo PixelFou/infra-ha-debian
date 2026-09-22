@@ -134,3 +134,44 @@ backend web_servers
 ## Conclusion
 
 La persistance de session par cookie HTTP est validée. HAProxy injecte le cookie SERVERID=web1 lors de la première réponse. Pour toutes les requêtes ultérieures, la présence de ce cookie permet au load-balancer d'acheminer le trafic vers le même nœud, assurant la continuité du stockage local des sessions PHP et l'incrémentation linéaire du compteur.
+
+
+
+
+
+
+
+
+
+## Test 4.3 — La sonde qui ment (Faux-positif de la sonde de santé statique)
+
+### Objectif
+Démontrer qu'une sonde de santé HTTP interrogeant une ressource statique (`/health`) servie directement par le serveur web (Nginx) génère un faux-positif : le load-balancer considère le backend comme opérationnel alors que le moteur d'exécution applicatif (PHP-FPM) est complètement hors service.
+
+### Procédure et épreuves de test
+
+1. **Arrêt du moteur PHP sur WEB1 :**
+   ```bash
+   sudo systemctl stop php8.2-fpm
+
+---
+
+## Interrogation directe de la page d'accueil applicative depuis LB1 :
+
+Bash
+curl -i [http://192.168.20.21/](http://192.168.20.21/)
+Résultat : Nginx ne pouvant plus communiquer avec le socket PHP-FPM, la réponse bascule immédiatement en erreur HTTP/1.1 502 Bad Gateway.
+
+## Interrogation directe du point de santé statique depuis LB1 :
+Bash
+curl -i [http://192.168.20.21/health](http://192.168.20.21/health)
+Résultat : Nginx répond HTTP/1.1 200 OK, le fichier statique n'ayant aucune dépendance avec PHP-FPM.
+
+Supervision HAProxy (journalctl -u haproxy) :
+HAProxy continue d'interroger la route /health. Recevant un code 200 OK, il maintient web1 à l'état UP dans son pool de serveurs actifs.
+
+## Conclusion
+Le test confirme la défaillance de la méthodologie de contrôle statique :
+La sonde /health valide exclusivement la disponibilité de la couche web (Nginx).
+Elle ne reflète pas la santé réelle du processeur applicatif (PHP-FPM).
+Conséquence : HAProxy continue de router du trafic vers un serveur incapable de traiter les requêtes dynamiques des utilisateurs.
