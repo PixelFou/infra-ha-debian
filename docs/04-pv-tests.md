@@ -188,6 +188,30 @@ Implémenter une sonde de santé dynamique `/health.php` effectuant des contrôl
 1. **Création du script `/health.php` sur WEB1 et WEB2 :**
    Le script teste l'existence du drapeau `/etc/tp/maintenance` (HTTP 503), l'accès en écriture à `/var/www/html/data` (HTTP 500) et la capacité d'exécution de PHP (HTTP 200).
 
+  GNU nano 7.2                /var/www/html/health.php                          
+<?php
+// 1. Contrôle du drapeau de maintenance
+if (file_exists('/etc/tp/maintenance')) {
+    http_response_code(503);
+    echo 'MAINTENANCE';
+    exit;
+}
+
+// 2. Contrôle de l'accès au dossier de données
+$data_dir = '/var/www/html/data';
+if (!is_dir($data_dir) || !is_writable($data_dir)) {
+    http_response_code(500);
+    echo 'DATA_DIR_NOT_WRITABLE';
+    exit;
+}
+
+// 3. Statut nominal
+http_response_code(200);
+echo 'OK';
+
+
+
+
 2. **Mise à jour de la configuration HAProxy :**
    Remplacement de la sonde statique par `option httpchk GET /health.php` et validation du code de retour `200`.
 
