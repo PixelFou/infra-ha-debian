@@ -277,4 +277,7 @@ Exécuter une procédure de mise à jour applicative (passage de la version 1.0 
 
 ```
 
+## Conclusion
+
+La procédure de Rolling Update combinée au mode DRAIN d'HAProxy valide l'objectif de Zero-Downtime Deployment. L'isolation progressive des nœuds a permis de traiter l'intégralité des 1 040 requêtes sans générer la moindre erreur HTTP (0 échec).
 
