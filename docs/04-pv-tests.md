@@ -176,6 +176,7 @@ La sonde /health valide exclusivement la disponibilité de la couche web (Nginx)
 Elle ne reflète pas la santé réelle du processeur applicatif (PHP-FPM).
 Conséquence : HAProxy continue de router du trafic vers un serveur incapable de traiter les requêtes dynamiques des utilisateurs.
 
+---
 
 ## Test 4.4 — La sonde honnête (Sonde dynamique /health.php)
 
