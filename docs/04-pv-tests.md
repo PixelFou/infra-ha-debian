@@ -229,3 +229,52 @@ echo 'OK';
 
 ### Conclusion
 La sonde dynamique remplit son rôle de contrôle de santé réel. Contrairement à la sonde statique 4.3, toute défaillance du moteur applicatif PHP provoque la sortie immédiate du backend du pool de répartition HAProxy, garantissant zéro erreur côté utilisateur.
+
+
+## Test 4.5 — Mise à jour sans interruption de service (Rolling Update 1.0 -> 1.1)
+
+### Objectif
+Exécuter une procédure de mise à jour applicative (passage de la version 1.0 à 1.1) sur le cluster Web sans aucune interruption de service pour les utilisateurs (taux de disponibilité cible : 100,000 %).
+
+---
+
+### Procédure exécutée
+
+1. **Lancement de la sonde de contrôle (sur CLIENT) :**
+   Exécution du script `check-dispo.sh http://192.168.10.100/` avec un intervalle de 0,2 s.
+
+2. **Traitement du nœud WEB1 :**
+   - Passage de `WEB1` en mode `DRAIN` via le socket HAProxy (`set server web_servers/web1 state drain`).
+   - Attente de l'extinction des sessions actives sur `WEB1`.
+   - Mise à jour de la version applicative (`1.1` dans `/var/www/html/version.txt`).
+   - Remise en service de `WEB1` (`set server web_servers/web1 state ready`).
+
+3. **Traitement du nœud WEB2 :**
+   - Passage de `WEB2` en mode `DRAIN` via le socket HAProxy (`set server web_servers/web2 state drain`).
+   - Mise à jour de la version applicative (`1.1` dans `/var/www/html/version.txt`).
+   - Remise en service de `WEB2` (`set server web_servers/web2 state ready`).
+
+---
+
+### Bilan de disponibilité (Sonde de test)
+
+```text
+
+===============================================================
+ BILAN DE DISPONIBILITE, http://192.168.10.100/
+===============================================================
+ Requetes emises        : 1040 (1 toutes les 0.2 s)
+ Reussies / en echec    : 1040 / 0
+ TAUX DE DISPONIBILITE  : 100.000 %
+ Temps de reponse moyen : 7 ms (sur les requetes abouties)
+---------------------------------------------------------------
+ AUCUNE INTERRUPTION, 100.000 % de disponibilite
+---------------------------------------------------------------
+ Repartition de charge (sur les 1040 requetes servies) :
+   web2              799 requetes (76.8 %)
+   web1              241 requetes (23.2 %)
+===============================================================
+
+```
+
+
