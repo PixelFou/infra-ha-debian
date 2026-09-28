@@ -175,3 +175,32 @@ Le test confirme la défaillance de la méthodologie de contrôle statique :
 La sonde /health valide exclusivement la disponibilité de la couche web (Nginx).
 Elle ne reflète pas la santé réelle du processeur applicatif (PHP-FPM).
 Conséquence : HAProxy continue de router du trafic vers un serveur incapable de traiter les requêtes dynamiques des utilisateurs.
+
+
+## Test 4.4 — La sonde honnête (Sonde dynamique /health.php)
+
+### Objectif
+Implémenter une sonde de santé dynamique `/health.php` effectuant des contrôles applicatifs réels (exécution PHP, droits d'écriture sur le répertoire de données, absence de drapeau de maintenance) et valider qu'HAProxy isole automatiquement un serveur applicatif en défaillance.
+
+### Procédure et résultats
+
+1. **Création du script `/health.php` sur WEB1 et WEB2 :**
+   Le script teste l'existence du drapeau `/etc/tp/maintenance` (HTTP 503), l'accès en écriture à `/var/www/html/data` (HTTP 500) et la capacité d'exécution de PHP (HTTP 200).
+
+2. **Mise à jour de la configuration HAProxy :**
+   Remplacement de la sonde statique par `option httpchk GET /health.php` et validation du code de retour `200`.
+
+3. **Simulation de panne PHP-FPM sur WEB1 (`systemctl stop php8.2-fpm`) :**
+   - **Horodatage :** 11:20:12
+   - **Détection HAProxy :** `Server web_servers/web1 is DOWN, reason: Layer7 wrong status, code: 502`
+   - **Comportement client :** 100% des requêtes clientes basculées vers `web2` avec succès (HTTP 200).
+
+4. **Rétablissement du service sur WEB1 (`systemctl start php8.2-fpm`) :**
+   - **Horodatage :** 11:21:54
+   - **Réintégration HAProxy :** `Server web_servers/web1 is UP, reason: Layer7 check passed, code: 200`
+   - **Nombre de serveurs actifs :** 2 active servers online.
+
+---
+
+### Conclusion
+La sonde dynamique remplit son rôle de contrôle de santé réel. Contrairement à la sonde statique 4.3, toute défaillance du moteur applicatif PHP provoque la sortie immédiate du backend du pool de répartition HAProxy, garantissant zéro erreur côté utilisateur.
