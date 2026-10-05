@@ -281,3 +281,84 @@ Exécuter une procédure de mise à jour applicative (passage de la version 1.0 
 
 La procédure de Rolling Update combinée au mode DRAIN d'HAProxy valide l'objectif de Zero-Downtime Deployment. L'isolation progressive des nœuds a permis de traiter l'intégralité des 1 040 requêtes sans générer la moindre erreur HTTP (0 échec).
 
+
+---
+
+## Phase 5 — Réplication des données applicatives
+
+### 5.1 Démonstration de l'incohérence des données
+Un formulaire de téléversement de fichiers a été déployé sur `/var/www/html/upload.php` sur **WEB1** et **WEB2**, stockant les données dans `/var/www/data/`.
+
+* **Constat :** Lorsqu'un fichier est déposé via la VIP, il est enregistré localement sur le nœud qui traite la requête HTTP `POST` (ex. `WEB1`). Si une requête ultérieure est distribuée sur `WEB2`, le fichier est absent.
+* **Conclusion :** En l'absence de mécanisme de synchronisation, l'état applicatif est incohérent d'un serveur à l'autre.
+
+---
+
+### 5.2 Mise en place de la réplication (rsync + systemd timer)
+
+Nous avons retenu l'approche **synchronisation périodique via `rsync` et minuterie `systemd`**, opérant exclusivement sur le réseau dédié **HA-SYNC** (`10.99.99.0/24`).
+
+#### Sécurisation SSH (sur WEB2)
+Une clé SSH dédiée SSH `ed25519` sans mot de passe a été générée sur **WEB1**. Côté **WEB2**, l'accès dans `/root/.ssh/authorized_keys` est restreint :
+```text
+from="10.99.99.21",no-port-forwarding,no-agent-forwarding,no-X11-forwarding,no-pty ssh-ed25519 AAAAC3... root@web1
+
+
+Automation Systemd (sur WEB1)
+Service (/etc/systemd/system/replica-data.service) :
+
+Ini, TOML
+[Unit]
+Description=Replication rsync de /var/www/data vers WEB2
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/rsync -az --delete -e "ssh -i /root/.ssh/id_rsync" /var/www/data/ root@10.99.99.22:/var/www/data/
+
+
+Timer (/etc/systemd/system/replica-data.timer) :
+
+Ini, TOML
+[Unit]
+Description=Timer de réplication /var/www/data toutes les minutes
+
+[Timer]
+OnCalendar=*:0/1
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+
+### 5.3 Mesure du RPO réel (Recovery Point Objective)
+
+La mesure du RPO a été effectuée en déposant un fichier via le portail web, puis en provoquant l'extinction brutale du serveur hôte d'écriture avant de vérifier la présence du document sur le second nœud.
+
+| Essai | Fichier déposé | Serveur initial | Action de simulation de panne | Fichier présent sur WEB2 ? | RPO mesuré | Conformité (< 5 min) |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: |
+| **1** | `test-rpo-1.txt` | WEB1 | Extinction brutale (`poweroff`) | Oui | < 60 s | Validé |
+| **2** | `test-rpo-2.txt` | WEB1 | Extinction brutale (`poweroff`) | Oui | < 60 s | Validé |
+| **3** | `test-rpo-3.txt` | WEB1 | Extinction brutale (`poweroff`) | Oui | < 60 s | Validé |
+
+
+Bilan RPO : Le RPO maximal mesuré est de 60 secondes (égal à la période du timer systemd).
+Conformité : L'exigence contractuelle du cahier des charges (RPO < 5 minutes) est pleinement validée.
+
+
+### 5.4 Arbitrage architectural et limites assumées
+
+En réplication unidirectionnelle (WEB1 --> WEB2), tout fichier écrit sur WEB2 risquerait d'être écrasé par l'option --delete de rsync. 
+
+Solution retenue : Modèle Actif/Passif en écriture
+La configuration HAProxy aiguille prioritairement les requêtes de modification/dépôt (méthode HTTP POST) vers WEB1 :
+
+Nous avons ajouté à notre block backend_web_servers sur les deux Haproxy afin de diriger prioritairement les requêtes de modification/dépôt (méthode HTTP POST) vers WEB1 : 
+
+acl is_write method POST
+use-server web1 if is_write
+
+Ainsi que : server web2 192.168.20.22:80 check inter 2s fall 3 rise 2 backup "backup pour web2 afin de garantit que WEB2 ne recevra les écritures que si WEB1 est totalement hors service.
+
+Limite assumée : En cas de panne de WEB1, HAProxy bascule les requêtes POST sur WEB2 (backup). Les fichiers déposés sur WEB2 pendant la période d'indisponibilité devront faire l'objet d'une resynchronisation manuelle vers WEB1 (WEB2 -> WEB1) avant le redémarrage de la minuterie systemd sur WEB1.
