@@ -4,17 +4,17 @@
 
 | Équipement | Interface | Réseau | Adresse IP / Masque | Rôle |
 | :--- | :--- | :--- | :--- | :--- |
-| **CLIENT** | eth0 | HA-LAN | `192.168.10.50/24` | Client de test |
-| **LB1** | eth0 | HA-LAN | `192.168.10.11/24` | Load Balancer 1 (Master LAN) |
-| **LB1** | eth1 | HA-DMZ | `192.168.20.11/24` | Interface DMZ LB1 |
-| **LB1** | eth2 | HA-SYNC | `10.99.99.11/24` | Interconnexion / Administration / Syslog |
-| **LB2** | eth0 | HA-LAN | `192.168.10.12/24` | Load Balancer 2 (Backup LAN) |
-| **LB2** | eth1 | HA-DMZ | `192.168.20.12/24` | Interface DMZ LB2 |
-| **LB2** | eth2 | HA-SYNC | `10.99.99.12/24` | Interconnexion / Administration |
-| **WEB1** | eth0 | HA-DMZ | `192.168.20.21/24` | Serveur Web 1 |
-| **WEB1** | eth1 | HA-SYNC | `10.99.99.21/24` | Réplication de données (rsync) |
-| **WEB2** | eth0 | HA-DMZ | `192.168.20.22/24` | Serveur Web 2 |
-| **WEB2** | eth1 | HA-SYNC | `10.99.99.22/24` | Réplication de données (rsync) |
+| **CLIENT** | enp0s8 | HA-LAN | `192.168.10.50/24` | Client de test |
+| **LB1** | enp0s8 | HA-LAN | `192.168.10.11/24` | Load Balancer 1 (Master LAN) |
+| **LB1** | enp0s9 | HA-DMZ | `192.168.20.11/24` | Interface DMZ LB1 |
+| **LB1** | enp0s10 | HA-SYNC | `10.99.99.11/24` | Interconnexion / Administration / Syslog |
+| **LB2** | enp0s8 | HA-LAN | `192.168.10.12/24` | Load Balancer 2 (Backup LAN) |
+| **LB2** | enp0s9 | HA-DMZ | `192.168.20.12/24` | Interface DMZ LB2 |
+| **LB2** | enp0s10 | HA-SYNC | `10.99.99.12/24` | Interconnexion / Administration |
+| **WEB1** | enp0s9 | HA-DMZ | `192.168.20.21/24` | Serveur Web 1 |
+| **WEB1** | enp0s10 | HA-SYNC | `10.99.99.21/24` | Réplication de données (rsync) |
+| **WEB2** | enp0s9 | HA-DMZ | `192.168.20.22/24` | Serveur Web 2 |
+| **WEB2** | enp0s10 | HA-SYNC | `10.99.99.22/24` | Réplication de données (rsync) |
 | **VIP LAN** | Virtual | HA-LAN | `192.168.10.100/24` | IP Virtuelle publique (HAProxy) |
 | **VIP DMZ** | Virtual | HA-DMZ | `192.168.20.100/24` | Passerelle Virtuelle pour les serveurs Web |
 
