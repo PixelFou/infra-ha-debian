@@ -351,10 +351,7 @@ Conformité : L'exigence contractuelle du cahier des charges (RPO < 5 minutes) e
 
 En réplication unidirectionnelle (WEB1 --> WEB2), tout fichier écrit sur WEB2 risquerait d'être écrasé par l'option --delete de rsync. 
 
-Solution retenue : Modèle Actif/Passif en écriture
-La configuration HAProxy aiguille prioritairement les requêtes de modification/dépôt (méthode HTTP POST) vers WEB1 :
-
-Nous avons ajouté à notre block backend_web_servers sur les deux Haproxy afin de diriger prioritairement les requêtes de modification/dépôt (méthode HTTP POST) vers WEB1 : 
+Solution retenue : Modèle Actif/Passif --> Nous avons ajouté à notre block backend_web_servers sur les deux Haproxy afin de diriger prioritairement les requêtes de modification/dépôt (méthode HTTP POST) vers WEB1 : 
 
 acl is_write method POST
 use-server web1 if is_write
