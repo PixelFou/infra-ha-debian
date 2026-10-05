@@ -375,6 +375,8 @@ Limite assumée : En cas de panne de WEB1, HAProxy bascule les requêtes POST su
 
 ---
 
+## Phase 6 : Durcissement
+
 ### 6.2 PV d'incident : Conflit VRRP (Split-Brain) suite à l'activation de nftables
 
 * **Description de l'incident :** Après l'application d'une politique par défaut `drop` sur LB1 et LB2, les deux nœuds se sont déclarés `MASTER` simultanément, provoquant un conflit sur la VIP (`192.168.10.100`).
