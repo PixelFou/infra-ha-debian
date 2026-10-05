@@ -1,0 +1,41 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+    chain input {
+        type filter hook input priority filter; policy drop;
+
+        iif "lo" accept
+        ct state established,related accept
+
+        # CORRECTION DU PIÈGE N°2 : Autoriser le protocole VRRP (IP 112)
+        ip protocol vrrp accept
+
+        # HTTP/HTTPS depuis HA-LAN
+        tcp dport { 80, 443 } accept
+
+        # SSH et Syslog sur l'interface HA-SYNC uniquement
+        iifname "enp0s10" tcp dport 22 accept
+        iifname "enp0s10" udp dport 514 accept
+    }
+
+    chain forward {
+        type filter hook forward priority filter; policy drop;
+
+        # Routage DMZ vers WAN
+        iifname "enp0s9" oifname "enp0s3" accept
+        ct state established,related accept
+    }
+
+    chain output {
+        type filter hook output priority filter; policy accept;
+    }
+}
+
+table ip nat {
+    chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        oifname "enp0s3" masquerade
+    }
+}
