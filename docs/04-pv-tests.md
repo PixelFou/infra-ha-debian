@@ -368,6 +368,6 @@ backend web_servers
     server web2 192.168.20.22:80 check inter 2000ms fall 5 rise 2 cookie web2 backup
 
 
-Ainsi que : server web2 192.168.20.22:80 check inter 2s fall 3 rise 2 backup "backup pour web2 afin de garantit que WEB2 ne recevra les écritures que si WEB1 est totalement hors service.
+Ainsi que : server web2 192.168.20.22:80 check inter 2000ms fall 5 rise 2 cookie web2 backup. "backup" pour web2 afin de garantit que WEB2 ne recevra les écritures que si WEB1 est totalement hors service.
 
 Limite assumée : En cas de panne de WEB1, HAProxy bascule les requêtes POST sur WEB2 (backup). Les fichiers déposés sur WEB2 pendant la période d'indisponibilité devront faire l'objet d'une resynchronisation manuelle vers WEB1 (WEB2 -> WEB1) avant le redémarrage de la minuterie systemd sur WEB1.
