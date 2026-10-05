@@ -372,3 +372,14 @@ Solution retenue : Modèle Actif/Passif --> Nous avons ajouté à notre block ba
 Ainsi que : server web2 192.168.20.22:80 check inter 2000ms fall 5 rise 2 cookie web2 backup. "backup" pour web2 afin de garantit que WEB2 ne recevra les écritures que si WEB1 est totalement hors service.
 
 Limite assumée : En cas de panne de WEB1, HAProxy bascule les requêtes POST sur WEB2 (backup). Les fichiers déposés sur WEB2 pendant la période d'indisponibilité devront faire l'objet d'une resynchronisation manuelle vers WEB1 (WEB2 -> WEB1) avant le redémarrage de la minuterie systemd sur WEB1.
+
+---
+
+### 6.2 PV d'incident : Conflit VRRP (Split-Brain) suite à l'activation de nftables
+
+* **Description de l'incident :** Après l'application d'une politique par défaut `drop` sur LB1 et LB2, les deux nœuds se sont déclarés `MASTER` simultanément, provoquant un conflit sur la VIP (`192.168.10.100`).
+* **Diagnostic :** 
+  * Une capture `tcpdump -ni enp0s9 proto 112` a confirmé que les annonces VRRP transmises par LB1 n'étaient plus traitées par la chaîne `input` de LB2.
+  * La commande `arping` depuis le client a révélé deux réponses MAC distinctes pour l'adresse VIP.
+* **Cause :** Le protocole VRRP fonctionne directement sur la couche IP (protocole `112`). Il ne s'appuie ni sur TCP ni sur UDP. Sans règle spécifique, la politique `drop` intercepte ces trames multicast (`224.0.0.18`).
+* **Resolution :** Ajout de la règle `ip protocol vrrp accept` dans la chaîne `input` des répartiteurs.
