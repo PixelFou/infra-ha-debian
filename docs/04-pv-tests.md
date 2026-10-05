@@ -382,6 +382,6 @@ Limite assumée : En cas de panne de WEB1, HAProxy bascule les requêtes POST su
 * **Description de l'incident :** Après l'application d'une politique par défaut `drop` sur LB1 et LB2, les deux nœuds se sont déclarés `MASTER` simultanément, provoquant un conflit sur la VIP (`192.168.10.100`).
 * **Diagnostic :** 
   * Une capture `tcpdump -ni enp0s9 proto 112` a confirmé que les annonces VRRP transmises par LB1 n'étaient plus traitées par la chaîne `input` de LB2.
-  * La commande `arping` depuis le client a révélé deux réponses MAC distinctes pour l'adresse VIP.
+  * La commande `arping` depuis le client a révélé deux réponses MAC distinctes avec la même adresse VIP (192.168.10.100), ce qui confirme donc que lb1 et lb2 portaient la même VIP même si lb1 est toujours debout car lb2 n'a pas connaissance de cela du fait que les paquets VRRP ne passaient plus.
 * **Cause :** Le protocole VRRP fonctionne directement sur la couche IP (protocole `112`). Il ne s'appuie ni sur TCP ni sur UDP. Sans règle spécifique, la politique `drop` intercepte ces trames multicast (`224.0.0.18`).
 * **Resolution :** Ajout de la règle `ip protocol vrrp accept` dans la chaîne `input` des répartiteurs.
