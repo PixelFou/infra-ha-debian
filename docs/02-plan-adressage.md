@@ -31,3 +31,4 @@
 | `10.99.99.0/24` (HA-SYNC) | `10.99.99.0/24` | TCP | 22 (SSH) | Administration SSH sécurisée à accès restreint entre les nœuds |
 | `10.99.99.21`, `.22`, `.12` | `10.99.99.11` (LB1) | UDP | 514 (Syslog) | Centralisation des journaux système et applicatifs via `rsyslog` |
 | `192.168.20.0/24` (HA-DMZ) | `0.0.0.0/0` (Internet) | Tous | Any | Masquerade / NAT sortant via la passerelle VIP DMZ (LB MASTER) |
+
