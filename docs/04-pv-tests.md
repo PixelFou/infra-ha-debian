@@ -354,7 +354,7 @@ En réplication unidirectionnelle (WEB1 --> WEB2), tout fichier écrit sur WEB2 
 Solution retenue : Modèle Actif/Passif --> Nous avons ajouté à notre block backend_web_servers sur les deux Haproxy afin de diriger prioritairement les requêtes de modification/dépôt (méthode HTTP POST) vers WEB1 : 
 
 # --- Backend Web (WEB1 & WEB2) ---
-backend web_servers
+   backend web_servers
     balance roundrobin
     cookie SERVERID insert indirect nocache
 
