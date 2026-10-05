@@ -386,6 +386,7 @@ Limite assumée : En cas de panne de WEB1, HAProxy bascule les requêtes POST su
 * **Cause :** Le protocole VRRP fonctionne directement sur la couche IP (protocole `112`). Il ne s'appuie ni sur TCP ni sur UDP. Sans règle spécifique, la politique `drop` intercepte ces trames multicast (`224.0.0.18`).
 * **Resolution :** Ajout de la règle `ip protocol vrrp accept` dans la chaîne `input` des répartiteurs. Nous obtenons désormais des réponses d'une seule adresse MAC car lb2 est automatiquement repassé en BACKUP.
 
+```text
 debian@client:~$ sudo arping -I enp0s8 192.168.10.100 
 ARPING 192.168.10.100
 60 bytes from 08:00:27:d6:86:01 (192.168.10.100): index=0 time=499.800 usec
@@ -395,6 +396,7 @@ ARPING 192.168.10.100
 60 bytes from 08:00:27:d6:86:01 (192.168.10.100): index=4 time=557.349 usec
 60 bytes from 08:00:27:d6:86:01 (192.168.10.100): index=5 time=706.410 usec
 60 bytes from 08:00:27:d6:86:01 (192.168.10.100): index=6 time=534.997 usec
+```
 
 ---
 
