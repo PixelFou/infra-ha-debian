@@ -20,7 +20,7 @@
 
 ---
 
-## Matrice de flux (Politique Default-Drop)
+## Matrice de flux
 
 | Source | Destination | Protocole | Port / Type | Justification |
 | :--- | :--- | :---: | :---: | :--- |
