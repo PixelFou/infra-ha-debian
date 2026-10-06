@@ -831,13 +831,13 @@ Dans /etc/network/interfaces
 ### Configuration web1 et web2 :
 
 # Interface DMZ
+```text
 auto enp0s9                               
 iface enp0s9 inet static
     address 192.168.20.21 et 192.168.20.22 pour web2
     netmask 255.255.255.0
     gateway 192.168.20.100
-
-
+```
 
 ---
 
