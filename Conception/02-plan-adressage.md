@@ -25,6 +25,7 @@
 | Source | Destination | Protocole | Port / Type | Justification |
 | :--- | :--- | :---: | :---: | :--- |
 | `192.168.10.0/24` (HA-LAN) | `192.168.10.100` (VIP LAN) | TCP | 80, 443 | Flux HTTP/HTTPS des clients vers le portail web (HAProxy) |
+| `192.168.10.0/24` (HA-LAN) | `192.168.10.11/12` | TCP | 22 | Flux SSH pour administrer LB1 et LB2 |
 | `10.99.99.11`, `.12` (HA-SYNC) | `224.0.0.18` (Multicast) | IP (112) | VRRP | Annonces Heartbeat Keepalived entre LB1 et LB2 |
 | `192.168.20.11`, `.12` (HA-DMZ) | `192.168.20.21`, `.22` (WEB) | TCP | 80 | Proxying du trafic web HAProxy vers les serveurs HTTP backend |
 | `10.99.99.21` (WEB1) | `10.99.99.22` (WEB2) | TCP | 22 (SSH) | Réplication unidirectionnelle de `/var/www/data/` via `rsync` |
