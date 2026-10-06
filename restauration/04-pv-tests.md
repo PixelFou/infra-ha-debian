@@ -867,15 +867,15 @@ Mettre en œuvre la terminaison TLS sur le cluster HAProxy via une Autorité de 
 
 #### 1. Redirection HTTP vers HTTPS (Port 80 -> 443)
 ```bash
-debian@client:~$ curl -I [http://portail.novasante.lan/](http://portail.novasante.lan/)
+debian@client:~$ curl -I http://portail.novasante.lan/
 HTTP/1.1 301 Moved Permanently
 content-length: 0
-location: [https://portail.novasante.lan/](https://portail.novasante.lan/)
+location: https://portail.novasante.lan
 ```
 
 #### 2. Requête HTTPS sans -k (Validation de la chaîne de confiance & En-têtes)
 ```text
-debian@client:~$ curl -i [https://portail.novasante.lan/](https://portail.novasante.lan/)
+debian@client:~$ curl -i https://portail.novasante.lan
 HTTP/1.1 200 OK
 date: Tue, 06 Oct 2026 09:23:39 GMT
 content-type: text/html; charset=UTF-8
