@@ -828,7 +828,7 @@ Validation du rôle de passerelle par défaut hautement disponible (VIP DMZ `192
 
 Dans /etc/network/interfaces
 
-Configuration web1 et web2 :
+### Configuration web1 et web2 :
 
 # Interface DMZ
 auto enp0s9                               
