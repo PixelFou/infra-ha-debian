@@ -874,7 +874,7 @@ location: [https://portail.novasante.lan/](https://portail.novasante.lan/)
 ```
 
 #### 2. Requête HTTPS sans -k (Validation de la chaîne de confiance & En-têtes)
-
+```text
 debian@client:~$ curl -i [https://portail.novasante.lan/](https://portail.novasante.lan/)
 HTTP/1.1 200 OK
 date: Tue, 06 Oct 2026 09:23:39 GMT
@@ -884,7 +884,4 @@ x-content-type-options: nosniff
 x-frame-options: DENY
 x-served-by: web1
 set-cookie: SERVERID=web1; path=/
-
-<!DOCTYPE html>
-<html lang="fr">
-...
+```
