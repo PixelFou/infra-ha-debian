@@ -1,1 +1,1 @@
-(./schema.png)
+![Texte alternatif](./schema.png)
