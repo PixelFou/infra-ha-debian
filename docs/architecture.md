@@ -1,1 +1,1 @@
-![alt text](image-1.png)
+(./schéma.png)
