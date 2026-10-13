@@ -1,1 +1,1 @@
-(./schéma.png)
+(./schema.png)
