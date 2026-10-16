@@ -885,3 +885,35 @@ x-frame-options: DENY
 x-served-by: web1
 set-cookie: SERVERID=web1; path=/
 ```
+
+
+## Phase 6.7 : Non-régression et mesures de RTO après durcissement
+
+### Objectif
+Vérifier l'absence de régression de la haute disponibilité après la mise en place du durcissement réseau et système (pare-feu `nftables` strict avec politique `DROP`, chiffrement TLS, journalisation centralisée rsyslog et accès d'administration restreints).
+
+---
+
+### Résumé des résultats de tests RTO
+
+Les trois scénarios de pannes VRRP rejoués depuis la VM CLIENT (`check-dispo.sh` vers `http://192.168.10.100/`) démontrent que le durcissement n'a dégradé ni les temps de réaction ni le taux de disponibilité du cluster.
+
+| Scénario de test | Commande exécutée | Requêtes (Total / Échec) | Taux de disponibilité | RTO observé |
+| :--- | :--- | :---: | :---: | :---: |
+| **A. Arrêt propre de Keepalived** | `systemctl stop keepalived` | 71 / 0 | 100,000 % | 0 s (Instantané) |
+| **B. Chute du service HAProxy** | `systemctl stop haproxy` | 194 / 0 | 100,000 % | 0 s (Instantané) |
+| **C. Coupure brutale (Poweroff MASTER)** | `VBoxManage controlvm LB1 poweroff` | 141 / 0 | 100,000 % | 0 s (Instantané) |
+
+---
+
+### Analyse et faits marquants
+
+1. **Prise en charge du protocole VRRP par nftables** :
+   Les règles `nftables` configurées à l'étape 6.2 autorisent explicitement le protocole VRRP (`ip protocol 112`) sur l'interface `HA-SYNC`. Aucune trame d'annonce ou d'élection n'a été bloquée, évitant tout risque de *split-brain*.
+
+2. **Fiabilité du script de santé Keepalived (`vrrp_script`)** :
+   Lors de l'arrêt isolé de HAProxy (Scénario B), le script de santé a immédiatement décelé l'absence du processus, abaissé la priorité du MASTER et provoqué le basculement transparent de la VIP vers LB2.
+
+3. **Conformité aux exigences contractuelles** :
+   - **Cible RTO (< 30 s)** : Validée avec un RTO réel mesuré à 0 s sur les trois scénarios.
+   - **Disponibilité globale** : 100,000 % sur l'ensemble des requêtes émises par la sonde.
